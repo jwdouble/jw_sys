@@ -1,0 +1,4 @@
+app:
+  name: jw_sys
+  port: 11000
+  version: v1
