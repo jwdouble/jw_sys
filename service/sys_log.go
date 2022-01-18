@@ -33,15 +33,17 @@ func LogPush() {
 }
 
 func push() {
-	cmd := rdx.GetRdxOperator().LRange("logx", 0, -1)
-
 	var list []*logx.Logger
 
 	// 把每条记录都推送到loki上,loki负责持久化 ??? 持久化好像不是很顶
-	for _, v := range cmd.Val() {
+	for {
+
+		sc := rdx.GetRdxOperator().LPop("logx")
+		if sc.String() == "lpop logx: redis: nil" {
+			break
+		}
 		l := &logx.Logger{}
-		fmt.Println(v)
-		err := json.Unmarshal([]byte(v), l)
+		err := json.Unmarshal([]byte(sc.String()), l)
 		if err != nil {
 			panic(err)
 		}
@@ -72,7 +74,7 @@ func parseIn(l []*logx.Logger) []*LokiPushStream {
 
 	for n, v := range l {
 		st := map[string]string{
-			"level": strconv.Itoa(int(v.Level)),
+			"level": v.Level.String(),
 		}
 		var val [][2]string
 		val = append(val, [2]string{strconv.Itoa(int(v.CreateAt.UnixNano())), v.Content})
