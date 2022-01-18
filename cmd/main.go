@@ -4,12 +4,17 @@ import (
 	"net/http"
 
 	"jw.lib/conf"
-	"jw.lib/logx"
 
 	"jw.sys/service"
 )
 
 func main() {
+	go service.LogPush()
+
 	http.HandleFunc("/health", service.Health)
-	logx.Error(http.ListenAndServe(conf.GetYaml("app.port"), nil))
+
+	err := http.ListenAndServe(conf.GetYaml("app.port"), nil)
+	if err != nil {
+		panic(err)
+	}
 }
