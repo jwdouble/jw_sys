@@ -25,14 +25,14 @@ var ServerInfo = serverInfo{
 
 func init() {
 	rdx.Register(conf.AppRedisConn.Value(rdx.DefaultRedisAddr))
+	startAt()
 }
 
-func StartAt() {
+func startAt() {
 	rdx.GetRdxOperator().Set(ServerInfo.Name+"StartAt", time.Now().Unix(), time.Hour*24*14)
 }
 
 func Health(w http.ResponseWriter, r *http.Request) {
-
 	buf, _ := json.Marshal(ServerInfo)
 	_, err := w.Write(buf)
 	if err != nil {
