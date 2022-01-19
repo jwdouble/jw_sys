@@ -25,7 +25,7 @@ type LokiPushStream struct {
 func LogPush() {
 	for {
 		select {
-		case <-time.Tick(time.Second * 10):
+		case <-time.Tick(time.Second * 5):
 			fmt.Println("logx scan")
 			push()
 		}
@@ -42,12 +42,12 @@ func push() {
 		if sc.String() == "lpop logx: redis: nil" {
 			break
 		}
-		l := &logx.Logger{}
-		err := json.Unmarshal([]byte(sc.String()), l)
+		ll := &logx.Logger{}
+		err := json.Unmarshal([]byte(sc.String()), ll)
 		if err != nil {
 			panic(err)
 		}
-		list = append(list, l)
+		list = append(list, ll)
 	}
 
 	streams := LokiPushReq{Streams: parseIn(list)}
@@ -55,7 +55,7 @@ func push() {
 	if err != nil {
 		panic(err)
 	}
-	client := &http.Client{Timeout: 5 * time.Second}
+	client := &http.Client{Timeout: 1 * time.Second}
 	fmt.Println("logx:", string(buf))
 	reader := bytes.NewReader(buf)
 	req, err := http.NewRequest("POST", "http://150.158.7.96:23100/loki/api/v1/push", reader)
@@ -74,7 +74,8 @@ func parseIn(l []*logx.Logger) []*LokiPushStream {
 
 	for n, v := range l {
 		st := map[string]string{
-			"level": v.Level.String(),
+			"level":    v.Level.String(),
+			"funcName": v.FuncName,
 		}
 		var val [][2]string
 		val = append(val, [2]string{strconv.Itoa(int(v.CreateAt.UnixNano())), v.Content})
