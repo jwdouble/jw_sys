@@ -1,20 +1,21 @@
 package main
 
 import (
-	"net/http"
-
-	"jw.lib/conf"
-
+	"io"
 	"jw.sys/service"
+	"log"
+	"net/http"
 )
 
 func main() {
-	go service.LogPush()
-
-	http.HandleFunc("/health", service.Health)
-
-	err := http.ListenAndServe(conf.GetYaml("app.port"), nil)
-	if err != nil {
-		panic(err)
+	h1 := func(w http.ResponseWriter, _ *http.Request) {
+		service.Health(w, &http.Request{})
 	}
+	h2 := func(w http.ResponseWriter, _ *http.Request) {
+		io.WriteString(w, "Hello from a HandleFunc #2!\n")
+	}
+
+	http.HandleFunc("/health", h1)
+	http.HandleFunc("/endpoint", h2)
+	log.Fatal(http.ListenAndServe(":11000", nil))
 }

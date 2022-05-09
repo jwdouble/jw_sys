@@ -2,38 +2,33 @@ package service
 
 import (
 	"encoding/json"
+	"jw.lib/logx"
 	"net/http"
 	"time"
-
-	"jw.lib/conf"
-	"jw.lib/logx"
-	"jw.lib/rdx"
 )
 
 type serverInfo struct {
 	Name    string `json:"name,omitempty"`
-	Port    string `json:"port,omitempty"`
 	Version string `json:"version,omitempty"`
-	RunTime int    `json:"runTime,omitempty"`
+	RunTime string `json:"runTime,omitempty"`
 }
 
-var ServerInfo = serverInfo{
-	Name:    conf.GetYaml("app.name"),
-	Port:    conf.GetYaml("app.port"),
-	Version: conf.GetYaml("app.version"),
+var si = serverInfo{
+	Name: "jw-sys",
 }
 
 func init() {
-	rdx.Register(conf.AppRedisConn.Value(rdx.DefaultRedisAddr))
-	startAt()
+	//rdx.Register(conf.AppRedisConn.Value(rdx.DefaultRedisAddr))
+	//startAt()
+	si.RunTime = time.Now().Format("2006-01-02 15:04:05")
 }
 
-func startAt() {
-	rdx.GetRdxOperator().Set(ServerInfo.Name+"StartAt", time.Now().Unix(), time.Hour*24*14)
-}
+//func startAt() {
+//	rdx.GetRdxOperator().Set(ServerInfo.Name+"StartAt", time.Now().Unix(), time.Hour*24*14)
+//}
 
 func Health(w http.ResponseWriter, r *http.Request) {
-	buf, _ := json.Marshal(ServerInfo)
+	buf, _ := json.Marshal(si)
 	_, err := w.Write(buf)
 	if err != nil {
 		logx.Error(err)
