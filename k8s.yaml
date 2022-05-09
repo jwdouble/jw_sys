@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jw-sys
+  namespace: jw
+spec:
+  replicas: 1      #停用或启用某个dep的方法是把replicas设为0
+  selector:
+    matchLabels:
+      app: jw-sys    # 用于用label匹配  xxx -l app=nginx-pod
+  template:
+    metadata:
+      labels:
+        app: jw-sys
+    spec:
+      containers:
+        - name: jw-sys
+          image: www.jwdouble.top:10443/k8s/jw-sys:v1
+          ports:
+            - containerPort: 11000
