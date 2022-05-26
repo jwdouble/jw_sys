@@ -57,7 +57,7 @@ func push() {
 	}
 	client := &http.Client{Timeout: 3 * time.Second}
 	reader := bytes.NewReader(buf)
-	req, err := http.NewRequest("POST", "http://150.158.7.96:23100/loki/api/v1/push", reader)
+	req, err := http.NewRequest("POST", "http://150.158.7.96:3100/loki/api/v1/push", reader)
 	if err != nil {
 		panic(err)
 	}
