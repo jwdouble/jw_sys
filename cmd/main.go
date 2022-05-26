@@ -17,5 +17,8 @@ func main() {
 
 	http.HandleFunc("/health", h1)
 	http.HandleFunc("/endpoint", h2)
-	log.Fatal(http.ListenAndServe(":11000", nil))
+
+	go service.LogPush()
+
+	log.Fatal(http.ListenAndServe(":10001", nil))
 }

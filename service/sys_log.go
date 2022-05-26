@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"jw.lib/conf"
 	"net/http"
 	"strconv"
 	"time"
@@ -22,6 +23,7 @@ type LokiPushStream struct {
 
 // LogPush 日志信息存在redis中，并推送一份到loki。redis做持久化保存
 func LogPush() {
+	rdx.Register(conf.APP_REDIS_ADDR.Value(rdx.DefaultRedisAddr), rdx.RedisPwd)
 	for {
 		select {
 		case <-time.Tick(time.Second * 10):

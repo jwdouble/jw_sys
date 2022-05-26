@@ -1,4 +1,4 @@
 app:
   name: jw_sys
-  port: 11000
+  port: 10001
   version: v1
