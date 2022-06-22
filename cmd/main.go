@@ -2,9 +2,10 @@ package main
 
 import (
 	"io"
-	"jw.sys/service"
 	"log"
 	"net/http"
+
+	"jw.sys/service"
 )
 
 func main() {
@@ -18,7 +19,8 @@ func main() {
 	http.HandleFunc("/health", h1)
 	http.HandleFunc("/endpoint", h2)
 
-	go service.LogPush()
+	//go service.LogPush()
+	go service.DataMarker()
 
 	log.Fatal(http.ListenAndServe(":10001", nil))
 }

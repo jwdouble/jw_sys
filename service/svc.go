@@ -2,9 +2,10 @@ package service
 
 import (
 	"encoding/json"
-	"jw.lib/logx"
 	"net/http"
 	"time"
+
+	"jw.lib/logx"
 )
 
 type serverInfo struct {
@@ -31,7 +32,7 @@ func Health(w http.ResponseWriter, r *http.Request) {
 	buf, _ := json.Marshal(si)
 	_, err := w.Write(buf)
 	if err != nil {
-		logx.Error(err)
+		logx.Error("health err: %s", err)
 	}
 
 	return

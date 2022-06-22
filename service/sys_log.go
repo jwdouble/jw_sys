@@ -3,10 +3,10 @@ package service
 import (
 	"bytes"
 	"encoding/json"
-	"jw.lib/conf"
 	"net/http"
-	"strconv"
 	"time"
+
+	"jw.lib/conf"
 
 	"jw.lib/logx"
 	"jw.lib/rdx"
@@ -74,11 +74,11 @@ func parseIn(l []*logx.Logger) []*LokiPushStream {
 	for n, v := range l {
 		st := map[string]string{
 			"level":    v.Level.String(),
-			"file":     v.Position,
-			"funcName": v.FuncName,
+			"file":     v.Pos,
+			"funcName": v.Caller,
 		}
 		var val [][2]string
-		val = append(val, [2]string{strconv.Itoa(int(v.CreateAt.UnixNano())), logFormat(v)})
+		val = append(val, [2]string{v.Ts, logFormat(v)})
 
 		list[n] = &LokiPushStream{Stream: st, Values: val}
 	}
@@ -87,5 +87,5 @@ func parseIn(l []*logx.Logger) []*LokiPushStream {
 }
 
 func logFormat(l *logx.Logger) string {
-	return "FuncName:" + l.FuncName + "	" + "Content:" + l.Content + "\r\n" + "Position:" + l.Position
+	return "FuncName:" + l.Caller + "	" + "Content:" + l.Msg + "\r\n" + "Position:" + l.Pos
 }
