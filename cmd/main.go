@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"jw.sys/mapper"
 	"jw.sys/service"
 )
 
@@ -18,6 +19,8 @@ func main() {
 
 	http.HandleFunc("/health", h1)
 	http.HandleFunc("/endpoint", h2)
+
+	mapper.Register()
 
 	//go service.LogPush()
 	go service.DataMarker()

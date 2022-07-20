@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"sync"
+	"sync/atomic"
 	"time"
 
-	"jw.lib/conf"
 	"jw.lib/jsonx"
 	"jw.lib/randx"
 	"jw.lib/sqlx"
@@ -15,7 +14,6 @@ import (
 
 // DataMarker 创建大量数据
 func DataMarker() {
-	sqlx.Register(sqlx.DefaultSqlDriver, conf.APP_PG_ADDR.Value(sqlx.DefaultSqlAddr))
 	f, _ := os.Create("record.txt")
 
 	stmt, err := sqlx.GetSqlOperator().Prepare(`insert into mock_large (id,data_1,data_2,data_3,data_4,data_5,data_6,data_7,data_8,data_9,data_10) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`)
@@ -28,28 +26,27 @@ func DataMarker() {
 		Msg  string `json:"msg,omitempty"`
 	}
 
-	i := 0
+	var i int32
 	ch := make(chan struct{}, 0)
 	// print speed trend every min
 	go func() {
-		mu := sync.Mutex{}
 		c := time.NewTicker(time.Minute)
 		for {
 			select {
 			case <-ch: //
 				return
 			case <-c.C:
-				mu.Lock()
-				f.WriteString(strconv.Itoa(i) + "\r\n")
-				mu.Unlock()
+				val := atomic.LoadInt32(&i)
+				f.WriteString(strconv.Itoa(int(val)) + "\r\n")
 			}
 		}
 	}()
 
 	data := info{Code: 200, Msg: "msg"}
 	current := time.Now()
-	for i = 0; i < 200000; i++ {
-		_, err = stmt.Exec(i, "const", "prefix"+randx.NewString(8), 0, randx.NewInt(32), randx.NewString(10), randx.NewString(20), jsonx.MustMarshal(&data), randx.NewString(20), randx.NewString(20), randx.NewString(20))
+	for i = 600000; i < 1000000; atomic.AddInt32(&i, 1) {
+		n := time.Now().UnixNano()
+		_, err = stmt.Exec(i, "const", "prefix"+randx.NewString(8, n, 1), 0, randx.NewInt(32, n, 2), randx.NewString(10, n, 3), randx.NewString(20, n, 4), jsonx.MustMarshal(&data), randx.NewString(20, n, 5), randx.NewString(20, n, 6), randx.NewString(20, n, 7))
 		if err != nil {
 			panic(err)
 		}
