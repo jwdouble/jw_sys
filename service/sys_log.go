@@ -36,7 +36,7 @@ func push() {
 	tn := time.Now().UnixNano()
 	for {
 		val := rdx.GetRdxOperator().LPop("logx")
-		if val.String() == "lpop logx: redis: nil" {
+		if val.Val() == "" {
 			break
 		}
 
@@ -57,15 +57,16 @@ func push() {
 		}
 
 		pushData.Streams = append(pushData.Streams, lps)
+		time.Sleep(10 * time.Millisecond)
 	}
 
 	if len(pushData.Streams) == 0 {
 		return
 	}
 
-	_, err := resty.New(). //SetDebug(true).
-				R().SetHeader("Content-Type", "application/json").
-				SetBody(jsonx.MustMarshal(pushData)).Post("http://150.158.7.96:3100/loki/api/v1/push")
+	_, err := resty.New().SetDebug(true).
+		R().SetHeader("Content-Type", "application/json").
+		SetBody(jsonx.MustMarshal(pushData)).Post("http://150.158.7.96:3100/loki/api/v1/push")
 	if err != nil {
 		log.Fatalln("http post err", err.Error())
 	}
