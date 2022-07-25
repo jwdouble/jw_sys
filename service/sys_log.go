@@ -22,6 +22,7 @@ type LokiPushStream struct {
 // LogPush 日志信息存在redis中，并推送一份到loki。redis做持久化保存
 func LogPush() {
 	rdx.Register(rdx.RedisConfigMap)
+	push()
 	for {
 		select {
 		case <-time.Tick(time.Second * 10):
@@ -34,8 +35,9 @@ func push() {
 	pushData := &LokiPushReq{}
 	// 把每条记录都推送到loki上,loki负责持久化 ??? 持久化好像不是很顶
 	tn := time.Now().UnixNano()
+	cli := rdx.GetRdxOperator()
 	for {
-		val := rdx.GetRdxOperator().LPop("logx")
+		val := cli.LPop("logx")
 		if val.Val() == "" {
 			break
 		}
