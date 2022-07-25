@@ -15,7 +15,15 @@ spec:
     spec:
       containers:
         - name: jw-sys
-          image: www.jwdouble.top:10443/k8s/jw-sys:202207251644
+          image: www.jwdouble.top:10443/k8s/jw-sys:202207251712
+          env:
+            - name: GO_SERVICE_PORT
+              value: ":10000"
+            - name: GO_COMMON_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: jw-secret
+                  key: common_password
           ports:
             - containerPort: 10001
             - containerPort: 20001

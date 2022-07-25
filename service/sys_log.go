@@ -64,7 +64,7 @@ func push() {
 		return
 	}
 
-	_, err := resty.New().SetDebug(true).
+	_, err := resty.New().SetDebug(false).
 		R().SetHeader("Content-Type", "application/json").
 		SetBody(jsonx.MustMarshal(pushData)).Post("http://150.158.7.96:3100/loki/api/v1/push")
 	if err != nil {
