@@ -1,12 +1,12 @@
 package service
 
 import (
-	"bytes"
-	"encoding/json"
-	"net/http"
+	"log"
+	"strconv"
 	"time"
 
-	"jw.lib/logx"
+	"github.com/go-resty/resty/v2"
+	"jw.lib/jsonx"
 	"jw.lib/rdx"
 )
 
@@ -31,59 +31,64 @@ func LogPush() {
 }
 
 func push() {
-	var list []*logx.Logger
-
+	pushData := &LokiPushReq{}
 	// 把每条记录都推送到loki上,loki负责持久化 ??? 持久化好像不是很顶
+	tn := time.Now().UnixNano()
 	for {
-
-		sc := rdx.GetRdxOperator().LPop("logx")
-		if sc.String() == "lpop logx: redis: nil" {
+		val := rdx.GetRdxOperator().LPop("logx")
+		if val.String() == "lpop logx: redis: nil" {
 			break
 		}
-		l := &logx.Logger{}
-		err := json.Unmarshal([]byte(sc.Val()), l)
-		if err != nil {
-			panic(err)
+
+		i := info{}
+		m := map[string]string{
+			"app": "uncategorized",
 		}
-		list = append(list, l)
-	}
-
-	streams := LokiPushReq{Streams: parseIn(list)}
-	buf, err := json.Marshal(streams)
-	if err != nil {
-		panic(err)
-	}
-	client := &http.Client{Timeout: 3 * time.Second}
-	reader := bytes.NewReader(buf)
-	req, err := http.NewRequest("POST", "http://150.158.7.96:3100/loki/api/v1/push", reader)
-	if err != nil {
-		panic(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	_, err = client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func parseIn(l []*logx.Logger) []*LokiPushStream {
-	list := make([]*LokiPushStream, len(l))
-
-	for n, v := range l {
-		st := map[string]string{
-			"level":    v.Level.String(),
-			"file":     v.Pos,
-			"funcName": v.Caller,
+		err := jsonx.Unmarshal([]byte(val.Val()), &i)
+		if err == nil {
+			m["app"] = i.App
 		}
-		var val [][2]string
-		val = append(val, [2]string{v.Ts, logFormat(v)})
 
-		list[n] = &LokiPushStream{Stream: st, Values: val}
+		lps := &LokiPushStream{
+			Stream: m,
+			Values: [][2]string{
+				{strconv.Itoa(int(tn)), val.Val()},
+			},
+		}
+
+		pushData.Streams = append(pushData.Streams, lps)
 	}
 
-	return list
+	if len(pushData.Streams) == 0 {
+		return
+	}
+
+	_, err := resty.New(). //SetDebug(true).
+				R().SetHeader("Content-Type", "application/json").
+				SetBody(jsonx.MustMarshal(pushData)).Post("http://150.158.7.96:3100/loki/api/v1/push")
+	if err != nil {
+		log.Fatalln("http post err", err.Error())
+	}
 }
 
-func logFormat(l *logx.Logger) string {
-	return "FuncName:" + l.Caller + "	" + "Content:" + l.Msg + "\r\n" + "Position:" + l.Pos
+type info struct {
+	App string `json:"app,omitempty"`
 }
+
+//{
+//    "streams": [
+//        {
+//            "stream": {
+//                // 标签，标签内容  -- 用于查询
+//                "app": "appName"
+//            },
+//            "values": [
+//                [   // 时间
+//                    "1658717309285135071",
+//                    // 内容
+//                    "fizzbuzz"
+//                ]
+//            ]
+//        }
+//    ]
+//}

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"jw.lib/logx"
+	"github.com/rs/zerolog/log"
 )
 
 type serverInfo struct {
@@ -32,7 +32,7 @@ func Health(w http.ResponseWriter, r *http.Request) {
 	buf, _ := json.Marshal(si)
 	_, err := w.Write(buf)
 	if err != nil {
-		logx.Error("health err: %s", err)
+		log.Error().Msg("Health: " + err.Error())
 	}
 
 	return

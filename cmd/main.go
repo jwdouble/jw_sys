@@ -22,8 +22,9 @@ func main() {
 
 	mapper.Register()
 
-	//go service.LogPush()
-	go service.DataMarker()
+	go service.LogPush()
+	//go service.DataMarker()
 
+	log.Println("server start")
 	log.Fatal(http.ListenAndServe(":10001", nil))
 }

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: jw-sys
-          image: www.jwdouble.top:10443/k8s/jw-sys:202205261706
+          image: www.jwdouble.top:10443/k8s/jw-sys:202207251519
           ports:
             - containerPort: 10001
             - containerPort: 20001
