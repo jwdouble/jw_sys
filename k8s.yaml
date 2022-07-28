@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: jw-sys
-          image: www.jwdouble.top:10443/k8s/jw-sys:202207251712
+          image: www.jwdouble.top:10443/k8s/jw-sys:202207281728
           env:
             - name: GO_SERVICE_PORT
               value: ":10000"
