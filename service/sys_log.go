@@ -43,12 +43,13 @@ func push() {
 		}
 
 		i := info{}
-		m := map[string]string{
-			"app": "uncategorized",
-		}
+		m := map[string]string{}
 		err := jsonx.Unmarshal([]byte(val.Val()), &i)
 		if err == nil {
 			m["app"] = i.App
+		}
+		if m["app"] == "" {
+			m["app"] = "uncategorized"
 		}
 
 		lps := &LokiPushStream{
